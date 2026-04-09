@@ -15,6 +15,8 @@ const __dirname = dirname(__filename)
 // Any requests for the CSS files will be resolved to the public directory
 const publicPath = path.join(__dirname, '../public')
 app.use(express.static(publicPath))
+//Middleware
+app.use(express.json())
 
 // Serving up the HTML file from the public directory
 app.get('/', (req, res) => {
