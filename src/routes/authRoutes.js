@@ -51,8 +51,8 @@ router.post('/login', (req, res) => {
         if (!passwordIsValid) {return res.status(401).send({message: "invalid password"})}
 
         const token = jwt.sign({id: user.id}, process.env.JWT_SECRET, {expiresIn: '24h'})
-        res.json(token)
-        
+        res.json({token})
+
     } catch (err) {
         console.log(err.message)
         res.sendStatus(503)
