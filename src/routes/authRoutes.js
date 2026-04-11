@@ -17,7 +17,7 @@ router.post('/register', (req, res) => {
         const result = insertUser.run(username, hashedPassword)
 
         // add the user's first todo 
-        const defaultTodo = `Hello :) Add your first todo!`
+        const defaultTodo = "Hello :) Add your first todo!"
         const insertTodo = db.prepare(`INSERT INTO todos (user_id, task)
              VALUES (?, ?)`)
              insertTodo.run(result.lastInsertRowid, defaultTodo)
@@ -26,21 +26,38 @@ router.post('/register', (req, res) => {
         const token = jwt.sign({id: result.lastInsertRowid}, process.env.JWT_SECRET,
             {expiresIn: '24h'})
 
-        res.json({token})
+        res.json({token}) // send the token back to the user
     }
         
       catch (err) {
         console.log(err.message)
         res.sendStatus(503)
     }
-
-    
       })
 
 router.post('/login', (req, res) => {
     // we get their email and we lookup the password associated with that
     // email in the database
     // we compare it with the entered password using the same encryption key
+    const {username, password} = req.body
+
+    try {
+        const getUser = db.prepare('SELECT * FROM users WHERE username = ?')
+        const user = getUser.get(username)
+
+        if (!user) {return res.status(404).send({message: "User not found"})} // guard clause
+
+        const passwordIsValid = bcrypt.compareSync(password, user.password)
+        if (!passwordIsValid) {return res.status(401).send({message: "invalid password"})}
+
+        const token = jwt.sign({id: user.id}, process.env.JWT_SECRET, {expiresIn: '24h'})
+        res.json(token)
+        
+    } catch (err) {
+        console.log(err.message)
+        res.sendStatus(503)
+
+    }
 })
 
 
